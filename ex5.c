@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-
+#define ZERO 0
 
 typedef struct Song {
     char* title;
@@ -17,6 +16,17 @@ typedef struct Playlist {
     Song** songs;
     int songsNum;
 } Playlist;
+// All the Functions used in the code.
+void mainMinu();
+void watchPlayslists();
+void addPlaylist();
+void removePlaylist();
+void showPlaylists();
+void addSong();
+void deleteSong();
+void sortSongs();
+void playSongs();
+void addPlayLists(Playlist** playlists);
 
 //some recommendations for functions, you may implement however you want
 
@@ -56,5 +66,58 @@ void sortPlaylist() {
 
 
 int main() {
-    printf("Goodbye!\n");  
+    Playlist** playlists = NULL;
+    mainMinu(&playlists);
+}
+void mainMinu(Playlist** playlists) {
+    int task ;
+    while(1){
+        printf("Please Choose:\n"
+            "1. Watch playlists\n"
+            "2. Add playlist\n"
+            "3. Remove playlist\n"
+            "4. exit\n");
+        scanf("%d", &task);
+            switch (task)
+            {
+                case 1: {
+                    watchPlayslists(&playlists);
+                    break;
+                }
+                case 2: {
+                    addPlayLists(&playlists);
+                    break;
+                }
+                case 3: {
+
+                }
+                case 4: {
+                    printf("Goodbye!\n");
+                    return;
+                }
+                default:
+                    printf("Invalid option\n");;
+            }
+        }
+    }
+
+void watchPlayslists(Playlist* header) {
+    printf("Choose a playlist:\n");
+    Playlist* newPlaylist = header;
+    for(int i = 0)
+
+}
+void addPlaylist(Playlist* playlists) {}
+Playlist *addPlayLists(Playlist* playlists) {
+    Playlist *newplaylist = (Playlist*)malloc(sizeof(Playlist));
+    if(newplaylist == NULL) {
+        exit(1);
+    }
+    char name[];
+    printf("Enter playlist's name:\n");
+    scanf(" %s", name);
+    newplaylist->name =(char*)malloc(strlen(name) + 1);
+    newplaylist->songs = NULL;
+    newplaylist->songsNum = ZERO;
+    return newplaylist;
 }
