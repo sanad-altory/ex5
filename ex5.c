@@ -26,7 +26,7 @@ void addSong();
 void deleteSong();
 void sortSongs();
 void playSongs();
-void addPlayLists(Playlist** playlists);
+Playlist *addPlayLists(int* counter);
 
 //some recommendations for functions, you may implement however you want
 
@@ -66,10 +66,13 @@ void sortPlaylist() {
 
 
 int main() {
-    Playlist** playlists = NULL;
-    mainMinu(&playlists);
+
 }
-void mainMinu(Playlist** playlists) {
+void mainMinu() {
+    int numPlaylists;
+    int capacity;
+    Playlist** playlists = NULL;
+
     int task ;
     while(1){
         printf("Please Choose:\n"
@@ -85,7 +88,14 @@ void mainMinu(Playlist** playlists) {
                     break;
                 }
                 case 2: {
-                    addPlayLists(&playlists);
+                    if(numPlaylists  == capacity) {
+                        capacity++;
+                        playlists = (Playlist**)realloc(playlists,capacity * sizeof(Playlist*));
+                        if(!**playlists)
+                            exit(1);
+                    }
+                    playlists[numPlaylists]=(&numPlaylists);
+
                     break;
                 }
                 case 3: {
@@ -107,9 +117,10 @@ void watchPlayslists(Playlist* header) {
     for(int i = 0)
 
 }
-void addPlaylist(Playlist* playlists) {}
-Playlist *addPlayLists(Playlist* playlists) {
+void addPlaylist() {}
+Playlist *addPlayLists( int* counter) {
     Playlist *newplaylist = (Playlist*)malloc(sizeof(Playlist));
+    *counter++;
     if(newplaylist == NULL) {
         exit(1);
     }
