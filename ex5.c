@@ -19,8 +19,10 @@ typedef struct Playlist {
 // All the Functions used in the code.
 void mainMinu();
 void watchPlayslists();
+void freePlaylist(Playlist* playlist);
+void freeSong(Song* song);
 void removePlaylist();
-void showPlaylists();
+void showPlaylist();
 Song* createSong();
 void addSong();
 void deleteSong();
@@ -42,30 +44,10 @@ void deleteSong() {
 void playSong() {
     
 }
-
-
-
-void freeSong() {
-
-}
-
-void freePlaylist() {
-    
-}
-
-void printPlaylistsMenu() {
-    printf("Please Choose:\n"); 
-    printf("\t1. Watch playlists\n\t2. Add playlist\n\t3. Remove playlist\n\t4. exit\n");   
-}
-
-
-
 void sortPlaylist() {
     
     printf("sorted\n");
 }
-
-
 
 int main() {
     mainMinu();
@@ -73,9 +55,9 @@ int main() {
 
 }
 void mainMinu() {
-    int numPlaylists;
-    int capacity;
-    Playlist** playlists = NULL;
+    int numPlaylists = 0;
+    int capacity = 1;
+    Playlist** playlists = (Playlist**)malloc(sizeof(Playlist*));
 
     int task ;
     while(1){
@@ -85,12 +67,11 @@ void mainMinu() {
             "3. Remove playlist\n"
             "4. exit\n");
         scanf("%d", &task);
-        clearBuffer();
             switch (task)
             {
                 //Show all the playlists
                 case 1: {
-                    watchPlayslists(&playlists,numPlaylists);
+                    watchPlayslists(playlists,numPlaylists);
                     break;
                 }//Add Playlist
                 case 2: {
@@ -105,27 +86,32 @@ void mainMinu() {
                     break;
                 }//Remove Playlist
                 case 3: {
-
+                    removePlaylist(playlists,&numPlaylists);
+                    clearBuffer();
+                    break;
                 }
                 case 4: {
                     printf("Goodbye!\n");
+                    for (int i = 0; i < numPlaylists; i++) {
+                        freePlaylist(playlists[i]);
+                    }
+                    free(playlists);
                     return;
                 }
                 default:
-                    printf("Invalid option\n");;
+                    printf("Invalid option\n");
             }
         }
     }
 
-void watchPlayslists(Playlist *header,int numPlaylists) {
+void watchPlayslists(Playlist **playlist,int numPlaylists) {
     printf("Choose a playlist:\n");
     for(int i = 0; i < numPlaylists; i++) {
-        printf("%d. %s\n",i+1,header[i].name);
+        printf("%d. %s\n",i+1,playlist[i]->name);
     }
-    printf("%d Back to main menu",numPlaylists+1);
+    printf("%d. Back to main menu",numPlaylists+1);
     int playlistIndex;
     scanf("%d", &playlistIndex);
-    clearBuffer();
     int task;
     while(1) {
         printf("playlist %s\n"
@@ -134,26 +120,28 @@ void watchPlayslists(Playlist *header,int numPlaylists) {
             "3. Delete Song\n"
             "4. Sort\n"
             "5. Play\n"
-            "6. Back\n",header[playlistIndex-1].name);
+            "6. Back\n",playlist[playlistIndex-1]->name);
         scanf("%d",&task);
-        clearBuffer();
         switch(task) {
             //Show the Playlist.
             case 1: {
                 printf("choose a song to play, of 0 to quit:\n");
+                showPlaylist(playlist[playlistIndex-1]->songs);
+                break;
 
             }//Add Song to the Playlist.
             case 2: {
-                addSong(&header);
+                addSong(playlist[playlistIndex-1]);
+                break;
             }//Delete a Song from the Playlist.
             case 3: {
-
+                break;
             }//Sort the Playlist.
             case 4: {
-
+                break;
             }//Play all the Songs in the Playlist.
             case 5: {
-
+                break;
             }
             case 6:
                 return;
@@ -163,34 +151,33 @@ void watchPlayslists(Playlist *header,int numPlaylists) {
 
 }
 void addSong(Playlist *playlist) {
-    Song* newSong = createSong(playlist->songsNum);
+    Song* newSong = createSong();
     playlist->songsNum++;
     playlist->songs = (Song**)realloc(playlist->songs,playlist->songsNum*sizeof(Song*));
     if(!*playlist->songs) {
         free(newSong);
-        exit(1);
+        return;
     }
     playlist->songs[playlist->songsNum-1] = newSong;
 }
 Song* createSong(int *numSongs) {
     Song* newSong = (Song*)malloc(sizeof(Song));
     if(!newSong)
-        exit(1);
-    (*numSongs)++;
+        return NULL;
     // Collect song details
     printf("Enter song's details:\n");
 
-    printf("Title: ");
+    printf("Title:\n ");
     newSong->title = getName();
 
-    printf("Artist: ");
+    printf("Artist:\n ");
     newSong->artist = getName();
 
-    printf("Year of release: ");
+    printf("Year of release:\n ");
     scanf("%d", &newSong->year);
     clearBuffer(); // To consume the newline character
 
-    printf("Lyrics: ");
+    printf("Lyrics:\n ");
     newSong->lyrics = getName();
 
     // Set initial streams count
@@ -201,7 +188,8 @@ Song* createSong(int *numSongs) {
 Playlist *addPlayLists( int* counter) {
     Playlist *newplaylist = (Playlist*)malloc(sizeof(Playlist));
     if(newplaylist == NULL) {
-        exit(1);
+    printf("Memory allocation error\n");
+        return NULL;
     }
     (*counter)++;
     printf("Enter playlist's name:\n");
@@ -216,25 +204,75 @@ void clearBuffer() {
     scanf("%*c");      // This consumes the newline itself
 }
 // function to allocate unlimited string and return a pointer to it.
-char *getName() {
+char* getName() {
     int len =0;
     char c;
-    char *str = (char*)malloc(sizeof(char));
-    if (str==NULL)
-        exit(1);
-    // clearBuffer();
-    while ( 1) {
-        if(scanf("%c", &c)!=1)
-            exit(1);
-        if ( c == '\n') {
-            break;
-        }
-        str[len] = c;
+    char* str = (char*)malloc(sizeof(char));
+    if (str==NULL) {
+        printf("didnt work\n");
+        return NULL;
+    }
+    scanf(" %c",&c);
+    while ( c != '\n') {
+        *(str+len) = c;
         len++;
-        str = realloc(str, (len + 1) * sizeof(char));
-        if (str == NULL) exit(1);// Increment len separately
-        // clearBuffer();
+        str = (char*)realloc(str, (len + 1) * sizeof(char));
+        if (str==NULL) {
+            printf("didnt work\n");
+            return NULL;
+        }
+        scanf("%c",&c);
     }
     str[len] = '\0'; // Add null terminator
     return str;
+}
+void showPlaylist() {
+
+}
+void freeSong(Song* song) {
+    if (song) {
+        free(song->title);
+        free(song->artist);
+        free(song->lyrics);
+        free(song);
+    }
+}
+
+void freePlaylist(Playlist* playlist) {
+    if (playlist) {
+        for (int i = 0; i < playlist->songsNum; i++) {
+            freeSong(playlist->songs[i]);
+        }
+        free(playlist->songs);
+        free(playlist->name);
+        free(playlist);
+    }
+}
+void removePlaylist(Playlist** playlists,int *numPlaylists) {
+    if(*numPlaylists == 0) {
+        printf("There are no playlists\n");
+        return;
+    }else {
+        printf("Choose a playlist:\n");
+        for(int i = 0; i < *numPlaylists; i++) {
+            printf("%d. %s\n",i+1,playlists[i]->name);
+        }
+        printf("%d. Back to main menu\n",*numPlaylists + 1);
+        int index;
+        do {
+            scanf("%d",&index);
+            if(index > *numPlaylists || index < 1)
+                printf("Invalid option\n");
+        }while(index > *numPlaylists || index < 1);
+        freePlaylist(playlists[index - 1]);
+        for(int i = index - 1; i < *numPlaylists-1; i++) {
+            playlists[i] = playlists[i + 1];
+        }
+        (*numPlaylists)--;
+        playlists = (Playlist**)realloc(playlists,*numPlaylists*sizeof(Playlist*));
+        printf("Playlist Deleted.\n");
+        if(!playlists) {
+            return;
+        }
+    }
 }
